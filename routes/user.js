@@ -1,0 +1,61 @@
+
+/*
+ * GET users listing.
+ */
+var Account = require('./../model/account');
+
+//app.get('/users', user.list);
+exports.list = function(req, res){
+    throw "GET /users - invalid call, not implemented.";
+};
+
+//app.use( function(q,r,n) {user.ensureSignedIn(q,r,n);});
+exports.ensureSignedIn = function(req, res, next) {
+    // make sure the user is signed in and, if not, redirect to login page
+    if( req.session.userId != null)
+        next(); // TODO: use something more secure to ensure signin legitimate
+    else
+        res.redirect( '/');
+};
+
+//app.get('/user/new', user.newUser);
+exports.newUser = function(req, res, next) {
+    res.render( 'createaccount', {err:false});
+};
+
+//app.post('/user/new', user.createUser);
+exports.createUser = function(req, res, next) {
+    Account.newAccount( req.body.username, req.body.password, function( err, acct) {
+        if( err) return next(err);
+
+        if( acct) {
+            // sign in
+            req.session.userId = acct._id.toHexString();    // TODO: use something more secure
+
+            // show user page
+            res.redirect( '/user/' + req.session.userId);
+        } else {
+            // duplicate user or invalid password
+            res.render( 'createaccount', {err:true});
+        }
+    });
+};
+
+//app.post('/user/:id', user.update);
+exports.update = function(req, res, next) {
+    if( req.params.id == req.session.userId) {
+        Account.updateAccount( req.params.id, req.body.username, req.body.password);
+        res.redirect( '/user/' + req.session.userId);
+    } else
+        res.redirect( '/');
+};
+
+//app.get('/user/:id', user.home);
+exports.home = function(req, res, next) {
+    if( req.params.id == req.session.userId) {
+        Account.findById( req.session.userId, function( err, acct) {
+            res.render('user', {account:acct});
+        });
+    } else
+        res.redirect( '/');
+};
