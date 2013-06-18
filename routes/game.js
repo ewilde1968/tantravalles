@@ -2,7 +2,7 @@
 /*
  * GET home page.
  */
-var Account = require('./../model/account');
+var Game = require('./../model/game');
 
 //app.get('/user/:userid/game/new', user.ensureSignedIn, game.newGame);
 exports.newGame = function(req, res, next){
