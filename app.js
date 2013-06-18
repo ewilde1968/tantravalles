@@ -7,6 +7,7 @@ var express = require('express'),
     Database = require('./model/database'),
     routes = require('./routes'),
     user = require('./routes/user'),
+    game = require('./routes/game'),
     http = require('http'),
     path = require('path');
 
@@ -24,7 +25,6 @@ app.use(express.cookieParser('tantravallesCookieSecret'));
 app.use(express.session({ secret: 'tantravallesSessionSecret'}));
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
-//app.use( function(q,r,n) {user.ensureSignedIn(q,r,n);});
 
 // development only
 if ('development' == app.get('env')) {
@@ -36,8 +36,12 @@ app.post('/', routes.signin);
 app.get('/users', user.list);
 app.get('/user/new', user.newUser);
 app.post('/user/new', user.createUser);
-app.get('/user/:id', user.ensureSignedIn, user.home);
-app.post('/user/:id', user.ensureSignedIn, user.update);
+app.get('/user/:userid', user.ensureSignedIn, user.home);
+app.post('/user/:userid', user.ensureSignedIn, user.update);
+app.get('/user/:userid/game/new', user.ensureSignedIn, game.newGame);
+app.post('/user/:userid/game/new', user.ensureSignedIn, game.createGame);
+app.get('/user/:userid/game/:gameid', user.ensureSignedIn, game.home);
+app.post('/user/:userid/game/:gameid', user.ensureSignedIn, game.update);
 
 // setup DB
 app.database = new Database();

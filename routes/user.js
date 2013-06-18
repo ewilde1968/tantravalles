@@ -12,7 +12,7 @@ exports.list = function(req, res){
 //app.use( function(q,r,n) {user.ensureSignedIn(q,r,n);});
 exports.ensureSignedIn = function(req, res, next) {
     // make sure the user is signed in and, if not, redirect to login page
-    if( req.session.userId != null)
+    if( req.session.userId != null && req.session.userId == req.params.userid)
         next(); // TODO: use something more secure to ensure signin legitimate
     else
         res.redirect( '/');
@@ -41,21 +41,15 @@ exports.createUser = function(req, res, next) {
     });
 };
 
-//app.post('/user/:id', user.update);
+//app.post('/user/:userid', user.update);
 exports.update = function(req, res, next) {
-    if( req.params.id == req.session.userId) {
-        Account.updateAccount( req.params.id, req.body.username, req.body.password);
-        res.redirect( '/user/' + req.session.userId);
-    } else
-        res.redirect( '/');
+    Account.updateAccount( req.session.userId, req.body.username, req.body.password);
+    res.redirect( '/user/' + req.session.userId);
 };
 
-//app.get('/user/:id', user.home);
+//app.get('/user/:userid', user.home);
 exports.home = function(req, res, next) {
-    if( req.params.id == req.session.userId) {
-        Account.findById( req.session.userId, function( err, acct) {
-            res.render('user', {account:acct});
-        });
-    } else
-        res.redirect( '/');
+    Account.findById( req.session.userId, function( err, acct) {
+        res.render('user', {account:acct});
+    });
 };
