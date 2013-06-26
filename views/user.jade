@@ -2,5 +2,15 @@ extends layout
 
 block content
   newGameURL = '/user/' + account._id + '/game/new'
-  a(href=newGameURL)
-    button New Game
+  .navMenu
+    a(href=newGameURL)
+      button.rightNavButton New Game
+    a(href="/")
+      button.leftNavButton Cancel
+  .multilist
+    ul.listgroup
+
+  script.
+    $(document).ready( function() {
+        // add each saved game to multilist here
+    };
