@@ -2,20 +2,11 @@ extends layout
 
 block content
   .navMenu
-    quitGameURL = '/user/' + account._id
+    quitGameURL = '/user/' + accountId
     a(href=quitGameURL)
       button.rightNavButton Quit
   #overworld
-
-  script.
-    $(document).ready( function() {
-        var map = #{game.maps[0]};
-        $.each( map.tiles, function(elem,index,arr) {
-            // create a tile image and add it to the overworld div
-            var x = (index % #{game.width}) * 16;
-            var y = Math.floor( index / #{game.width}) * 16;
-            var t = $('img').addClass('mapTile')
-                            .css({x:x,y:y})
-                            .css('background-position',elem.spriteIndex);
-        });
-    };
+    each tile, i in game.map.tiles
+      - var x = (i % game.map.width) * 16;
+      - var y = Math.floor( i / game.map.width) * 16;
+      img.mapTile(left=x, top=y, background-position=tile.spriteIndex)

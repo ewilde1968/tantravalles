@@ -15,12 +15,14 @@ a {
 .mapTile {
     position:absolute;
     background-image:url('/images/mapsprites.png');
+    width:16px;
+    height:16px;
 }
 
 #overworld {
     position:fixed;
     left:0px;
-    right:0px;
+    top:0px;
     width:100%;
     height:100%;
 }

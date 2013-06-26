@@ -29,8 +29,9 @@ exports.newGame = function(req, res, next){
 exports.home = function( req, res, next) {
     Game.findById( req.params.gameid, function(err,game) {
         res.render( 'overworld',
-                   {game:game}
-                    );
+                   {accountId:req.params.userid,
+                    game:game
+                   });
     });
 };
 
