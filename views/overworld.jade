@@ -1,12 +1,9 @@
 extends layout
 
 block content
-  .navMenu
-    quitGameURL = '/user/' + accountId
-    a(href=quitGameURL)
-      button.rightNavButton Quit
   #overworld
     each tile, i in game.map.tiles
-      - var x = (i % game.map.width) * 16;
-      - var y = Math.floor( i / game.map.width) * 16;
-      img.mapTile(left=x, top=y, background-position=tile.spriteIndex)
+      - var x = (i%game.map.width)*16;
+      - var y = Math.floor(i/game.map.width)*16;
+      - var s = 'left:' + x + 'px;top:' + y + 'px;background-position:' + tile.spriteIndex;
+      img.mapTile(style=s)
