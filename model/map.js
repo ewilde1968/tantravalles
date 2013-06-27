@@ -46,9 +46,28 @@ function Map( width, height) {
                     this.tiles[index+1] &= 0xfb;    // no west path allowed
             }
             
-            // choose terrain
-            var terrain = 0;//Math.floor(Math.random() * terrainTypes.length);
-            
+            // choose terrain, > terrainTypes.length means copy an adjacent terrain type
+            var terrain = Math.floor(Math.random() * (terrainTypes.length + 3));
+            if( terrain > terrainTypes.length) {
+                var tileToCopy = terrain - terrainTypes.length;
+                if( tileToCopy === 1) {
+                    if( index > width && x > 0)
+                        terrain = this.tiles[index - width - 1].terrain;
+                    else
+                        terrain -= 3;
+                } else if( tileToCopy === 2) {
+                    if( index >= width)
+                        terrain = this.tiles[index - width].terrain;
+                    else
+                        terrain -= 3;
+                } else {
+                    if( x > 0)
+                        terrain = this.tiles[index - 1].terrain;
+                    else
+                        terrain -= 3;
+                }
+            }
+                
             // calculate the index into the sprite list
             var spriteVerticalOffset = (terrain + spriteVerticalRoot) * spriteSize * -1;
             var spriteHorizontalOffset = paths * spriteSize * -1;
