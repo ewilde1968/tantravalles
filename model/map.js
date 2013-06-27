@@ -6,14 +6,17 @@
 module.exports = Map;
 
 var terrainTypes = ['forest','mountain','valley','special'];
-var spriteVerticalRoot = 0;
 var spriteSize = 16;
 
-function Map( width, height) {
-    this.tiles = new Array( width * height);
-    this.width = width;
-    this.height = height;
+Map.prototype.calculateMapSpriteOffset = function(paths,terrain,enchanted) {
+    // calculate the index into the sprite list
+    var spriteVerticalOffset = (terrain + (enchanted?1:0) * terrainTypes.length) * spriteSize * -1;
+    var spriteHorizontalOffset = paths * spriteSize * -1;
 
+    return spriteHorizontalOffset + 'px ' + spriteVerticalOffset + 'px';
+};
+
+Map.prototype.initMap = function(width, height) {
     for( var y = 0; y < height; y++) {
         var rootIndex = y*width;
         var nextRowIndex = ((y+1) < height) ? (y+1)*width : 0;
@@ -67,18 +70,21 @@ function Map( width, height) {
                         terrain -= 3;
                 }
             }
-                
-            // calculate the index into the sprite list
-            var spriteVerticalOffset = (terrain + spriteVerticalRoot) * spriteSize * -1;
-            var spriteHorizontalOffset = paths * spriteSize * -1;
-            var spriteOffset = spriteHorizontalOffset + 'px ' + spriteVerticalOffset + 'px';
             
             // set tile object
             this.tiles[index] = {terrain:terrain,
                                  paths:paths,
                                  enchanted:false,
-                                 spriteIndex:spriteOffset
+                                 spriteIndex:this.calculateMapSpriteOffset(paths,terrain,false)
                                 };
         }
     }
+};
+
+function Map( width, height) {
+    this.tiles = new Array( width * height);
+    this.width = width;
+    this.height = height;
+
+    this.initMap(width,height);
 }
