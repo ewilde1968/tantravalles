@@ -2,19 +2,9 @@
 /*
  * Map model
 */
+var Tile = require('./tile');
 
 module.exports = Map;
-
-var terrainTypes = ['forest','mountain','valley','special'];
-var spriteSize = 16;
-
-Map.prototype.calculateMapSpriteOffset = function(paths,terrain,enchanted) {
-    // calculate the index into the sprite list
-    var spriteVerticalOffset = (terrain + (enchanted?1:0) * terrainTypes.length) * spriteSize * -1;
-    var spriteHorizontalOffset = paths * spriteSize * -1;
-
-    return spriteHorizontalOffset + 'px ' + spriteVerticalOffset + 'px';
-};
 
 Map.prototype.initMap = function(width, height) {
     for( var y = 0; y < height; y++) {
@@ -49,10 +39,10 @@ Map.prototype.initMap = function(width, height) {
                     this.tiles[index+1] &= 0xfb;    // no west path allowed
             }
             
-            // choose terrain, > terrainTypes.length means copy an adjacent terrain type
-            var terrain = Math.floor(Math.random() * (terrainTypes.length + 3));
-            if( terrain > terrainTypes.length) {
-                var tileToCopy = terrain - terrainTypes.length;
+            // choose terrain, > Tile.terrainTypes.length means copy an adjacent terrain type
+            var terrain = Math.floor(Math.random() * (Tile.terrainTypes.length + 3));
+            if( terrain > Tile.terrainTypes.length) {
+                var tileToCopy = terrain - Tile.terrainTypes.length;
                 if( tileToCopy === 1) {
                     if( index > width && x > 0)
                         terrain = this.tiles[index - width - 1].terrain;
@@ -72,11 +62,7 @@ Map.prototype.initMap = function(width, height) {
             }
             
             // set tile object
-            this.tiles[index] = {terrain:terrain,
-                                 paths:paths,
-                                 enchanted:false,
-                                 spriteIndex:this.calculateMapSpriteOffset(paths,terrain,false)
-                                };
+            this.tiles[index] = new Tile( terrain, paths);
         }
     }
 };
