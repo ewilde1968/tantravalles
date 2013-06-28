@@ -6,32 +6,43 @@
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema,
     ObjectId = Schema.ObjectId,
-    Character = require('./character'),
+    Creature = require('./creature'),
+    Encounter = require('./encounter'),
     Map = require('./map');
 
 var GameSchema = new Schema( {
     owner:      { type:ObjectId, required:true },
-    characters: Array,
-    map:       Object
+    characters: [Creature.schema],
+    maps:       [Map.schema],
+    settings:   Object
 });
 
 
 GameSchema.statics.factory = function( settings, characterName, ownerId, cb) {
-    var character = new Character( characterName, ownerId);
-    var characterA = new Array( character);
-    var map = new Map( 32, 32);
+    Creature.fromTemplate( characterName, function(err,character) {
+        var result = new Game({owner:ownerId,
+                               settings:settings
+                              });
+        result.characters.push( character);
 
-    var result = new Game({owner:ownerId,
-                           characters:characterA,
-                           map:map
-                          });
-    result.save( function(err,game) {
-        if(err) {
-            delete characterA;
-            delete character;
-            delete map;
-        }
-        if(cb) cb(err,game);
+        var width = 32, height = 32;
+        var map = Map.factory( width, height);
+        result.maps.push( map);
+
+        Encounter.find({difficulty:settings.difficulty,
+                        minsize:{$lte:width*height},
+                        template:true
+                       },
+                       function(err,encounters) {
+            if(err) return err;
+
+            map.scatterEncounters(encounters);
+
+            result.save( function(err,game) {
+                if( err) return err;
+                if(cb) cb(err,game);
+            });
+        });
     });
 };
 

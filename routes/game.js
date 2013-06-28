@@ -12,7 +12,7 @@ exports.createGame = function( req, res, next) {
 //app.get('/user/:userid/game/new', user.ensureSignedIn, game.newGame);
 exports.newGame = function(req, res, next){
     // TODO implement the new game wizard
-    req.body.character = "White Knight";
+    req.body.character = "Acolyte";
     req.body.settings = { difficulty:"Tutorial" };
     
     Game.factory( req.body.settings, req.body.character, req.session.userId, function(err, game) {

@@ -2,15 +2,32 @@
 /*
  * Map model
 */
-var Tile = require('./tile');
+var mongoose = require('mongoose'),
+    Schema = mongoose.Schema,
+    ObjectId = Schema.ObjectId,
+    Creature = require('./creature'),
+    Encounter = require('./encounter'),
+    Tile = require('./tile');
 
-module.exports = Map;
+var MapSchema = new Schema( {
+    tiles:      [Tile.schema],
+    width:      Number,
+    height:     Number
+});
 
-Map.prototype.initMap = function(width, height) {
-    for( var y = 0; y < height; y++) {
-        var rootIndex = y*width;
-        var nextRowIndex = ((y+1) < height) ? (y+1)*width : 0;
-        for( var x = 0; x < width; x++) {
+MapSchema.statics.factory = function(width, height) {
+    var result = new Map({width:width,height:height});
+    if( result)
+        result.initMap();
+    
+    return result;
+}
+
+MapSchema.methods.initMap = function() {
+    for( var y = 0; y < this.height; y++) {
+        var rootIndex = y*this.width;
+        var nextRowIndex = ((y+1) < this.height) ? (y+1)*this.width : 0;
+        for( var x = 0; x < this.width; x++) {
             // before selecting a tile, each tile has a bitfield indicating
             // path requirements
             //    bits 7-4: swne must have path
@@ -30,7 +47,7 @@ Map.prototype.initMap = function(width, height) {
                 else
                     this.tiles[ nextRowIndex + x] = 0xd; // no north path allowed
             }
-            if( (x+1) != width) {
+            if( (x+1) != this.width) {
                 if( typeof this.tiles[index+1] !== 'number')
                     this.tiles[index+1] = 0xf;  // first row
                 if( paths & 0x1)
@@ -41,36 +58,52 @@ Map.prototype.initMap = function(width, height) {
             
             // choose terrain, > Tile.terrainTypes.length means copy an adjacent terrain type
             var terrain = Math.floor(Math.random() * (Tile.terrainTypes.length + 3));
-            if( terrain > Tile.terrainTypes.length) {
+            if( terrain >= Tile.terrainTypes.length) {
                 var tileToCopy = terrain - Tile.terrainTypes.length;
-                if( tileToCopy === 1) {
-                    if( index > width && x > 0)
-                        terrain = this.tiles[index - width - 1].terrain;
+                if( tileToCopy === 0) {
+                    if( index > this.width && x > 0)
+                        terrain = this.tiles[index - this.width - 1].terrain;
                     else
-                        terrain -= 3;
-                } else if( tileToCopy === 2) {
-                    if( index >= width)
-                        terrain = this.tiles[index - width].terrain;
+                        terrain -= Tile.terrainTypes.length;
+                } else if( tileToCopy === 1) {
+                    if( index >= this.width)
+                        terrain = this.tiles[index - this.width].terrain;
                     else
-                        terrain -= 3;
+                        terrain -= Tile.terrainTypes.length;
                 } else {
                     if( x > 0)
                         terrain = this.tiles[index - 1].terrain;
                     else
-                        terrain -= 3;
+                        terrain -= Tile.terrainTypes.length;
                 }
             }
             
             // set tile object
-            this.tiles[index] = new Tile( terrain, paths);
+            this.tiles[index] = Tile.factory( terrain, paths);
         }
     }
 };
 
-function Map( width, height) {
-    this.tiles = new Array( width * height);
-    this.width = width;
-    this.height = height;
+MapSchema.methods.scatterEncounters = function( encounters) {
+    // sort tiles by terrain type in random order
+    var sortedA = new Array( Tile.terrainTypes.length);
+    Tile.terrainTypes.forEach( function(e,i) {sortedA[i] = new Array();});
+    this.tiles.forEach( function(e) {
+        var arr = sortedA[e.terrain];
+        arr.splice( Math.floor(Math.random()*arr.length), 0, e);
+    });
+    
+    // walk through encounters and assign to tiles
+    encounters.forEach( function(e) {
+        var terrain = Tile.terrainTypes.indexOf(e.terrain);
+        
+        if( terrain != -1) {
+            var tile = sortedA[terrain].shift();
+            tile.addEncounter( e);
+        }
+    });
+};
 
-    this.initMap(width,height);
-}
+
+var Map = mongoose.model('Map', MapSchema);
+module.exports = Map;
