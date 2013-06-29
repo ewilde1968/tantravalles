@@ -13,7 +13,7 @@ exports.createGame = function( req, res, next) {
             characters.push( cName);
     });
 
-    Game.factory( {difficulty:"Tutorial",
+    Game.factory( {difficulty:req.body.difficulty,
                    width:32,
                    height:32
                   },
