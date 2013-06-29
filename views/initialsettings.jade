@@ -16,6 +16,12 @@ block content
           li.multiselectitem
             input(name=character, type="checkbox")
             label(for=character) #{character}
+      label(for="difficulty") Difficulty
+      select(name="difficulty", id="diffulty")
+        option(value="Tutorial") Tutorial
+        option(value="Easy") Easy
+        option(value="Normal") Normal
+        option(value="Hard") Hard
 
   script.
     $(document).ready( function() {
