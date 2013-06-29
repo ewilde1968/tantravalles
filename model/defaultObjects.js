@@ -150,7 +150,8 @@ var defaultObjects = {
             items:null,
             dwellings:null
         }
-    )
+    ),
+    characters:new Array('Acolyte','Hermit','GobinLeader')
 };
 
 module.exports = defaultObjects;

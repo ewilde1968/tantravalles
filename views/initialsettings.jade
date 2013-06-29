@@ -1,0 +1,30 @@
+extends layout
+
+block content
+  #navBar
+    p New Game
+    cancelUrl = '/user/' + accountId
+    a(href=cancelUrl)
+      button.leftNavButton Cancel
+    a#startbutton
+      button.rightNavButton(disabled=true) Start
+  formUrl = '/user/' + accountId + '/game/new'
+  form( action=formUrl, method="POST")
+    fieldset
+      ul.multiselectlist
+        each character in characters
+          li.multiselectitem
+            input(name=character, type="checkbox")
+            label(for=character) #{character}
+
+  script.
+    $(document).ready( function() {
+        $('#startbutton').click( function() {$('form').submit();});
+        
+        $("form input:checkbox").click( function() {
+            if( $("input:checked").length > 0)
+                $('#startbutton button').attr("disabled",false);
+            else
+                $('#startbutton button').attr("disabled",true);
+        });
+    });

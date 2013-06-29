@@ -2,27 +2,40 @@
 /*
  * GET home page.
  */
-var Game = require('./../model/game');
+var Game = require('./../model/game'),
+    defaultObjects = require('./../model/defaultObjects');
 
 //app.post('/user/:userid/game/new', user.ensureSignedIn, game.createGame);
 exports.createGame = function( req, res, next) {
-    throw 'POST game:createGame - not implemented';
+    var characters = new Array();
+    defaultObjects.characters.forEach( function(cName,index,arr) {
+        if(req.body[cName] == "on")
+            characters.push( cName);
+    });
+
+    Game.factory( {difficulty:"Tutorial",
+                   width:32,
+                   height:32
+                  },
+                 characters,
+                 req.session.userId,
+                 function(err, game) {
+                     if(err) return next(err);
+                     if( game)
+                         res.redirect( '/user/' + req.session.userId + '/game/' + game._id.toHexString());
+                     else
+                         throw 'GET game:newGame - invalid Game object';
+                });
 };
 
 //app.get('/user/:userid/game/new', user.ensureSignedIn, game.newGame);
 exports.newGame = function(req, res, next){
     // TODO implement the new game wizard
-    req.body.character = "Acolyte";
-    req.body.settings = { difficulty:"Tutorial" };
-    
-    Game.factory( req.body.settings, req.body.character, req.session.userId, function(err, game) {
-        if(err) return next(err);
+    res.render('initialsettings',
+               {accountId:req.params.userid,
+                characters:defaultObjects.characters
+               });
 
-        if( game)
-            res.redirect( '/user/' + req.session.userId + '/game/' + game._id.toHexString());
-        else
-            throw 'GET game:newGame - invalid Game object';
-    });
 };
 
 //app.get('/user/:userid/game/:gameid', user.ensureSignedIn, game.home);

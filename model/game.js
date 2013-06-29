@@ -18,32 +18,38 @@ var GameSchema = new Schema( {
 });
 
 
-GameSchema.statics.factory = function( settings, characterName, ownerId, cb) {
-    Creature.fromTemplate( characterName, function(err,character) {
-        var result = new Game({owner:ownerId,
-                               settings:settings
-                              });
-        result.characters.push( character);
+GameSchema.statics.factory = function( settings, characters, ownerId, cb) {
+    var result = new Game({owner:ownerId,
+                           settings:settings
+                          });
 
-        var width = 32, height = 32;
-        var map = Map.factory( width, height);
-        result.maps.push( map);
+    var width = settings.width, height = settings.height;
+    var map = Map.factory( width, height);
+    result.maps.push( map);
 
-        Encounter.find({difficulty:settings.difficulty,
-                        minsize:{$lte:width*height},
-                        template:true
-                       },
-                       function(err,encounters) {
-            if(err) return err;
+    Encounter.find({difficulty:settings.difficulty,
+                    minsize:{$lte:width*height},
+                    template:true
+                   },
+                   function(err,encounters) {
+                       if(err) return err;
 
-            map.scatterEncounters(encounters);
+                       map.scatterEncounters(encounters);
 
-            result.save( function(err,game) {
-                if( err) return err;
-                if(cb) cb(err,game);
-            });
-        });
-    });
+                       characters.forEach( function(cName, index, arr) {
+                           Creature.fromTemplate( cName, function(err,character) {
+                               if(err) return err;
+                               result.characters.push( character);
+                               
+                               if( (index + 1) == arr.length) {
+                                   result.save( function(err,game) {
+                                       if( err) return err;
+                                       if(cb) cb(err,game);
+                                   });
+                               }
+                           });
+                       });
+                   });
 };
 
 GameSchema.statics.update = function() {
