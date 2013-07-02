@@ -1,9 +1,15 @@
 extends layout
 
 block content
+  script.
+    var map = {tile:new Array(),
+               width:#{game.maps[0].width};
+
   #overworld
     each tile, i in game.maps[0].tiles
       - var x = (i%game.maps[0].width)*16;
       - var y = Math.floor(i/game.maps[0].width)*16;
       - var s = 'left:' + x + 'px;top:' + y + 'px;background-position:' + tile.spriteIndex;
       img.mapTile(style=s)
+      script.
+        map.tile.push(#{tile});

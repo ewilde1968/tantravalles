@@ -38,7 +38,8 @@ var defaultObjects = {
             speed:          6,
             strength:       1,
             hitpoints:      12,
-            items:          new Array('Holy Cross')
+            items:          new Array('Holy Cross'),
+            homes:          new Array('Holy Chapel', 'Home Portal')
         },
         {
             name:          "Acolyte",
@@ -47,7 +48,8 @@ var defaultObjects = {
             speed:          6,
             strength:       3,
             hitpoints:      12,
-            items:          new Array('Sword of Truth')
+            items:          new Array('Sword of Truth'),
+            homes:          new Array('Holy Chapel', 'Home Portal')
         },
         {
             name:          "Innkeeper",
@@ -56,7 +58,8 @@ var defaultObjects = {
             speed:          6,
             strength:       2,
             hitpoints:      12,
-            items:          new Array('Tankard of Endless Ale')
+            items:          new Array('Tankard of Endless Ale'),
+            homes:          new Array('Inn', 'Home Portal')
         },
         {
             name:          "Scullion",
@@ -65,7 +68,8 @@ var defaultObjects = {
             speed:          4,
             strength:       1,
             hitpoints:      6,
-            items:          null
+            items:          null,
+            homes:          new Array('Inn', 'Home Portal')
         },
         {
             name:          "Unicorn",
@@ -92,7 +96,8 @@ var defaultObjects = {
             speed:          4,
             strength:       2,
             hitpoints:      12,
-            items:          new Array('Spear of Pain')
+            items:          new Array('Spear of Pain'),
+            homes:          new Array('Inn', 'Chaos Caves')
         },
         {
             name:          "Goblin Scout",
@@ -116,7 +121,7 @@ var defaultObjects = {
     encounters:new Array(
         {
             difficulty:"Tutorial",
-            minsize:1024,
+            minsize:0,
             name:"Holy Chapel",
             terrain:'valley',
             creatures:new Array("Hermit","Acolyte"),
@@ -125,7 +130,7 @@ var defaultObjects = {
         },
         {
             difficulty:"Tutorial",
-            minsize:1024,
+            minsize:0,
             name:"Inn",
             terrain:'valley',
             creatures:new Array("Innkeeper","Scullion"),
@@ -134,7 +139,7 @@ var defaultObjects = {
         },
         {
             difficulty:"Tutorial",
-            minsize:1024,
+            minsize:0,
             name:"Forest Glade",
             terrain:'forest',
             creatures:new Array("Unicorn"),
@@ -143,7 +148,7 @@ var defaultObjects = {
         },
         {
             difficulty:"Tutorial",
-            minsize:1024,
+            minsize:0,
             name:"Chaos Caves",
             terrain:'mountain',
             creatures:new Array("Bugbear","Goblin Leader", "Goblin Scout", "Goblin Warrior", "Goblin Warrior"),

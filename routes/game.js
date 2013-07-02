@@ -14,8 +14,8 @@ exports.createGame = function( req, res, next) {
     });
 
     Game.factory( {difficulty:req.body.difficulty,
-                   width:32,
-                   height:32
+                   width:8,
+                   height:8
                   },
                  characters,
                  req.session.userId,
@@ -30,7 +30,6 @@ exports.createGame = function( req, res, next) {
 
 //app.get('/user/:userid/game/new', user.ensureSignedIn, game.newGame);
 exports.newGame = function(req, res, next){
-    // TODO implement the new game wizard
     res.render('initialsettings',
                {accountId:req.params.userid,
                 characters:defaultObjects.characters

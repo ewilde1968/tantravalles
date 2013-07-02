@@ -13,7 +13,7 @@ var TileSchema = new Schema( {
     terrain:        Number,
     paths:          Number,
     enchanted:      Boolean,
-    encounters:     [Encounter.schema],
+    encounters:     [Encounter.schema],  // by convention, only one
     spriteIndex:    String
 });
 
