@@ -24,3 +24,20 @@ block content
                          enchanted:#{tile.enchanted},
                          paths:#{tile.paths}
                          };
+
+  formUrl = '/user/' + accountId + '/game/' + game._id + '/placecharacters'
+  form( action=formUrl, method="POST")
+    fieldset.textOverlay
+      label(for="startlocation") Choose starting location
+      select(name="startlocation", id="startlocation")
+        - var resultArr = new Array();
+        each character in game.characters
+          each home in character.homes
+            - if( resultArr.indexOf(home) == -1)
+              option(value=home) #{home}
+            - resultArr.push(home);
+      button Go
+
+  script.
+    $(document).ready( function() {
+    });

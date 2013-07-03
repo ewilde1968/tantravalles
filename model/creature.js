@@ -16,7 +16,8 @@ var CreatureSchema = new Schema( {
     speed:          { type:Number, required:true },
     strength:       { type:Number, required:true },
     hitpoints:      { type:Number, required:true },
-    items:          [Item.schema]
+    items:          [Item.schema],
+    homes:          [String]
 });
 
 var strValues = ['tiny','small','medium','large','tremendous'];

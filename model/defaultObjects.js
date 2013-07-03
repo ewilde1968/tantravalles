@@ -156,7 +156,7 @@ var defaultObjects = {
             dwellings:null
         }
     ),
-    characters:new Array('Acolyte','Hermit','GobinLeader')
+    characters:new Array('Acolyte','Hermit','Goblin Leader')
 };
 
 module.exports = defaultObjects;

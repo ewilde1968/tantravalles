@@ -38,6 +38,10 @@ EncounterSchema.methods.clone = function() {
     return new Encounter( plainObject);
 };
 
+EncounterSchema.methods.addCreature = function(creature) {
+    if( creature) this.creatures.push(creature);
+};
+
 
 var Encounter = mongoose.model('Encounter', EncounterSchema);
 module.exports = Encounter;

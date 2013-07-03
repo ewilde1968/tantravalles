@@ -40,6 +40,7 @@ app.get('/user/:userid', user.ensureSignedIn, user.home);
 app.post('/user/:userid', user.ensureSignedIn, user.update);
 app.get('/user/:userid/game/new', user.ensureSignedIn, game.newGame);
 app.post('/user/:userid/game/new', user.ensureSignedIn, game.createGame);
+app.post('/user/:userid/game/:gameid/placecharacters', user.ensureSignedIn, game.placeCharacters);
 app.get('/user/:userid/game/:gameid', user.ensureSignedIn, game.home);
 app.post('/user/:userid/game/:gameid', user.ensureSignedIn, game.update);
 

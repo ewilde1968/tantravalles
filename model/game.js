@@ -14,13 +14,16 @@ var GameSchema = new Schema( {
     owner:      { type:ObjectId, required:true },
     characters: [Creature.schema],
     maps:       [Map.schema],
-    settings:   Object
+    settings:   Object,
+    encounters: [Encounter.schema],
+    state:      String
 });
 
 
 GameSchema.statics.factory = function( settings, characters, ownerId, cb) {
     var result = new Game({owner:ownerId,
-                           settings:settings
+                           settings:settings,
+                           state:'placecharacters'
                           });
 
     var width = settings.width, height = settings.height;
@@ -34,7 +37,10 @@ GameSchema.statics.factory = function( settings, characters, ownerId, cb) {
                    function(err,encounters) {
                        if(err) return err;
 
-                       map.scatterEncounters(encounters);
+                       encounters.forEach( function(e) {
+                           result.encounters.push( e.clone());
+                       });
+                       map.scatterEncounters( result.encounters);
 
                        characters.forEach( function(cName, index, arr) {
                            Creature.fromTemplate( cName, function(err,character) {

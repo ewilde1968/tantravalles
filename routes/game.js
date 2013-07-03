@@ -22,7 +22,10 @@ exports.createGame = function( req, res, next) {
                  function(err, game) {
                      if(err) return next(err);
                      if( game)
-                         res.redirect( '/user/' + req.session.userId + '/game/' + game._id.toHexString());
+                         res.render('placecharacters',
+                                    {accountId:req.params.userid,
+                                     game:game
+                                    });
                      else
                          throw 'GET game:newGame - invalid Game object';
                 });
@@ -35,6 +38,35 @@ exports.newGame = function(req, res, next){
                 characters:defaultObjects.characters
                });
 
+};
+
+//app.post('/user/:userid/game:gameid/placecharacters', user.ensureSignedIn, game.placeCharacters);
+exports.placeCharacters = function(req,res,next) {
+    Game.findById( req.params.gameid, function(err,game) {
+        if(err) return err;
+        var dwelling = req.body.startlocation;
+
+        // find dwelling encounter
+        game.encounters.forEach( function(e) {
+            if( e.dwellings) {
+                e.dwellings.forEach( function(d) {
+                    if( d == dwelling) {
+                        // add party to encounters
+                        game.characters.forEach( function(c) {
+                            e.addCreature(c);
+                        });
+
+                        game.state = 'birdsong';
+                        res.redirect( '/user/' + req.params.userid + '/game/' + req.params.gameid);
+                        return;
+                    }
+                });
+            }
+        });
+        
+        // if we got here, there is no such dwelling
+        throw 'GET /user/:userid/game/:gameid/placecharacters no such dwelling';
+    });
 };
 
 //app.get('/user/:userid/game/:gameid', user.ensureSignedIn, game.home);
