@@ -11,9 +11,9 @@ var ItemSchema = new Schema( {
     template:       { type:Boolean, index:true },
     name:           { type:String, required:true, index:true },
     size:           { type:Number, required:true },
-    sharpness:      Number,
-    speed:          Number,
-    length:         Number,
+    sharpness:      { type:Number, default:0 },
+    speed:          { type:Number, default:0 },
+    length:         { type:Number, default:0 },
     owner:          ObjectId
 });
 

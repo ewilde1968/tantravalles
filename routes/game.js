@@ -22,10 +22,7 @@ exports.createGame = function( req, res, next) {
                  function(err, game) {
                      if(err) return next(err);
                      if( game)
-                         res.render('placecharacters',
-                                    {accountId:req.params.userid,
-                                     game:game
-                                    });
+                         res.redirect('/user/' + req.params.userid + '/game/' + game._id.toHexString());
                      else
                          throw 'GET game:newGame - invalid Game object';
                 });
@@ -40,11 +37,10 @@ exports.newGame = function(req, res, next){
 
 };
 
-//app.post('/user/:userid/game:gameid/placecharacters', user.ensureSignedIn, game.placeCharacters);
-exports.placeCharacters = function(req,res,next) {
-    Game.findById( req.params.gameid, function(err,game) {
-        if(err) return err;
-        var dwelling = req.body.startlocation;
+exports.placecharacters = function(inData,callback) {
+    Game.findById( inData.gameid, function(err,game) {
+        if(err) return next(err);
+        var dwelling = inData.startlocation;
 
         // find dwelling encounter
         game.encounters.forEach( function(e) {
@@ -57,15 +53,26 @@ exports.placeCharacters = function(req,res,next) {
                         });
 
                         game.state = 'birdsong';
-                        res.redirect( '/user/' + req.params.userid + '/game/' + req.params.gameid);
+                        game.save( function(err, g) {
+                            if(err) return next(err);
+
+                            if( callback) callback({state:'birdsong'})
+                        });
+
                         return;
                     }
                 });
             }
         });
+    });
+};
+
+exports.birdsong = function(inData,callback) {
+    Game.findById( inData.gameid, function(err,game) {
+        if(err) return next(err);
         
-        // if we got here, there is no such dwelling
-        throw 'GET /user/:userid/game/:gameid/placecharacters no such dwelling';
+        var result = {state:'midmorning'};
+        
     });
 };
 

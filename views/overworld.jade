@@ -3,7 +3,34 @@ extends layout
 block content
   script.
     var map = {tile:new Array(),
-               width:#{game.maps[0].width}};
+               width:#{game.maps[0].width}},
+        gameState = '#{game.state}',
+        characters = new Array();
+  each character in game.characters
+    script.
+        var ctemp = {
+            name:'#{character.name}',
+            size:#{character.size},
+            agility:#{character.agility},
+            speed:#{character.speed},
+            strength:#{character.strength},
+            hitpoints:#{character.hitpoints},
+            homes:new Array(),
+            items:new Array()
+        };
+    each home in character.homes
+      script.
+          ctemp.homes.push('#{home}');
+    each item in character.items
+      script.
+          ctemp.items.push({name:'#{item.name}',
+                            size:#{item.size},
+                            sharpness:#{item.sharpness},
+                            speed:#{item.speed},
+                            length:#{item.length}
+                            });
+    script.
+        characters.push(ctemp);
 
   #overworld
     each tile, i in game.maps[0].tiles
@@ -24,3 +51,83 @@ block content
                          enchanted:#{tile.enchanted},
                          paths:#{tile.paths}
                          };
+  #textOverlay
+    fieldset
+
+  script.
+    $(document).ready( function() {
+        var populateForm = function() {
+            var fs = $('#textOverlay fieldset');
+            fs.empty();
+          
+            switch( gameState) {
+                case "placecharacters":
+                    var selectElem = $('<select></select>').attr('name','startlocation')
+                                                           .attr('id','startlocation');
+                    var resultArr = new Array();
+                    characters.forEach( function(c) {
+                        c.homes.forEach( function(h) {
+                            if( resultArr.indexOf(h) == -1) {
+                                var optElem = $('<option></option>');
+                                optElem.val(h).text(h);
+                                selectElem.append( optElem);
+                                resultArr.push(h);
+                            }
+                        });
+                    });
+                    
+                    fs.append( $('<label></label>').attr('for','startlocation').text('Choose starting location'))
+                        .append( selectElem)
+                        .append( $('<button></button>').text('Go').click( function() {
+                            emit({startlocation:$('#startlocation').val()});
+                        }));
+                    break;
+                    
+                case "birdsong":
+                    characters.forEach( function(c) {
+                        var innerDiv = $('<div></div>').attr('id',c.name);
+                        innerDiv.append( $('<p></p>').text(c.name))
+                                .append( $('<p></p>').addClass('instructions').text('Whence do you travel and how so?'))
+                                .append( $('<button></button>').addClass('anotherscreenbutton').text('Magic'))
+                                .append( $('<label></label>').attr('for','hidden').text('Stay Hidden'))
+                                .append( $('<input></input>').attr('type','checkbox').attr('name','hidden'))
+                                .append( $('<label></label>').attr('for','activesearch').text('Active Search'))
+                                .append( $('<input></input>').attr('type','checkbox').attr('name','activesearch'))
+                                .append( $('<label></label>').attr('for','latestart').text('Late Start'))
+                                .append( $('<input></input>').attr('type','checkbox').attr('name','latestart'));
+                        fs.append( innerDiv);
+                    });
+                    fs.append( $('<button></button>').text('Go').click( function() {
+                        var emitData = {};
+                        characters.forEach( function(c) {
+                            var innerDiv = $('#' + c.name);
+                            emitData[c.name] = {hidden:$('#' + c.name + ' input[name="hidden"]').is(':checked'),
+                                                activesearch:$('#' + c.name + ' input[name="activesearch"]').is(':checked'),
+                                                latestart:$('#' + c.name + ' input[name="latestart"]').is(':checked')
+                                                };
+                        });
+                        emit(emitData);
+                    }));
+                    break;
+                    
+                default:
+                    break;
+            }
+        };
+        
+        var emit = function(emitData) {
+            emitData.gameid = '#{game.id}';
+            socket.emit(gameState, emitData, function(data) {
+                if( !!data.state)
+                    gameState = data.state;
+                
+                populateForm();
+            });
+        };
+        
+        //var socket = io.connect('http://10.0.1.10');
+        var socket = io.connect('http://localhost');
+        socket.on('connected', function () {
+            populateForm();
+        });
+    });

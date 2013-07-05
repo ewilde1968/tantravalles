@@ -40,7 +40,6 @@ app.get('/user/:userid', user.ensureSignedIn, user.home);
 app.post('/user/:userid', user.ensureSignedIn, user.update);
 app.get('/user/:userid/game/new', user.ensureSignedIn, game.newGame);
 app.post('/user/:userid/game/new', user.ensureSignedIn, game.createGame);
-app.post('/user/:userid/game/:gameid/placecharacters', user.ensureSignedIn, game.placeCharacters);
 app.get('/user/:userid/game/:gameid', user.ensureSignedIn, game.home);
 app.post('/user/:userid/game/:gameid', user.ensureSignedIn, game.update);
 
@@ -48,6 +47,16 @@ app.post('/user/:userid/game/:gameid', user.ensureSignedIn, game.update);
 app.database = new Database();
 app.database.initialize();
 
-http.createServer(app).listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
+var server = http.createServer(app);
+var io = require('socket.io').listen(server);
+server.listen(app.get('port'), function(){
+    console.log('Express server listening on port ' + app.get('port'));
+});
+
+io.sockets.on('connection', function(socket) {
+    console.log('Socket.IO connected');
+    
+    socket.emit('connected');
+    socket.on('placecharacters', function(inData, callback) {game.placecharacters(inData,callback);});
+    socket.on('birdsong', function(inData, callback) {game.birdsong(inData,callback);});
 });
