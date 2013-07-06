@@ -23,7 +23,7 @@ var GameSchema = new Schema( {
 GameSchema.statics.factory = function( settings, characters, ownerId, cb) {
     var result = new Game({owner:ownerId,
                            settings:settings,
-                           state:'placecharacters'
+                           state:'initial'
                           });
 
     var width = settings.width, height = settings.height;
@@ -60,6 +60,28 @@ GameSchema.statics.factory = function( settings, characters, ownerId, cb) {
 
 GameSchema.statics.update = function() {
 };
+
+GameSchema.methods.socketSendBack = function(newState,data,callback) {
+    if( !!newState)
+        this.state = newState;
+    data.state = this.state;
+    
+    this.save( function(err,g) {
+        if(err) return next(err);
+        if( callback) callback(data)
+    });
+};
+
+GameSchema.methods.getTileIndex = function(encounter) {
+    for(var index=0;index<this.maps.length;index++) {
+        var result = this.maps[index].getTileIndex(encounter);
+        if( result != -1)
+            return result;
+    };
+    
+    return -1;
+};
+
 
 var Game = mongoose.model('Game', GameSchema);
 module.exports = Game;

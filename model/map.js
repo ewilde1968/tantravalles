@@ -104,6 +104,14 @@ MapSchema.methods.scatterEncounters = function( encounters) {
     });
 };
 
+MapSchema.methods.getTileIndex = function(encounter) {
+    for(var index=0;index<this.tiles.length;index++) {
+        if( this.tiles[index].hasEncounter(encounter))
+            return index;
+    };
+    
+    return -1;
+};
 
 var Map = mongoose.model('Map', MapSchema);
 module.exports = Map;

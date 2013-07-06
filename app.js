@@ -57,6 +57,7 @@ io.sockets.on('connection', function(socket) {
     console.log('Socket.IO connected');
     
     socket.emit('connected');
+    socket.on('initial', function(inData, callback) {game.initial(inData,callback);});
     socket.on('placecharacters', function(inData, callback) {game.placecharacters(inData,callback);});
     socket.on('birdsong', function(inData, callback) {game.birdsong(inData,callback);});
 });

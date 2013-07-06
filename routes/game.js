@@ -14,8 +14,8 @@ exports.createGame = function( req, res, next) {
     });
 
     Game.factory( {difficulty:req.body.difficulty,
-                   width:8,
-                   height:8
+                   width:12,
+                   height:12
                   },
                  characters,
                  req.session.userId,
@@ -37,6 +37,22 @@ exports.newGame = function(req, res, next){
 
 };
 
+exports.initial = function(inData,callback) {
+    Game.findById( inData.gameid, function(err,game) {
+        if(err) return next(err);
+        
+        var resultA = new Array();
+        game.characters.forEach( function(c) {
+            c.homes.forEach( function(h) {
+                if( resultA.indexOf(h) == -1)
+                    resultA.push(h);
+            });
+        });
+        
+        game.socketSendBack('placecharacters', {homes:resultA}, callback);
+    });
+};
+
 exports.placecharacters = function(inData,callback) {
     Game.findById( inData.gameid, function(err,game) {
         if(err) return next(err);
@@ -47,17 +63,20 @@ exports.placecharacters = function(inData,callback) {
             if( e.dwellings) {
                 e.dwellings.forEach( function(d) {
                     if( d == dwelling) {
+                        var stateData = {characters:new Array()};
+                        
                         // add party to encounters
                         game.characters.forEach( function(c) {
                             e.addCreature(c);
+                            stateData.characters.push(c);
                         });
 
-                        game.state = 'birdsong';
-                        game.save( function(err, g) {
-                            if(err) return next(err);
+                        stateData.tileIndex = game.getTileIndex(e);
+                        if( -1 == stateData.tileIndex)
+                            throw( 'socketinput placecharacters, no tile for dwelling');
+                        
 
-                            if( callback) callback({state:'birdsong'})
-                        });
+                        game.socketSendBack('birdsong',stateData,callback);
 
                         return;
                     }

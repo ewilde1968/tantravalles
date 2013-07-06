@@ -13,7 +13,7 @@ var TileSchema = new Schema( {
     terrain:        Number,
     paths:          Number,
     enchanted:      Boolean,
-    encounter:      ObjectId,
+    encounter:      String,
     spriteIndex:    String
 });
 
@@ -41,7 +41,11 @@ TileSchema.methods.addEncounter = function(encounter) {
     if( !!encounter === false)
         return;
 
-    this.encounter = encounter._id;
+    this.encounter = encounter.id;
+};
+
+TileSchema.methods.hasEncounter = function(encounter) {
+    return ( !!encounter && encounter.id == this.encounter);
 };
 
 
