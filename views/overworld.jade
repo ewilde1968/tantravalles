@@ -18,14 +18,18 @@ block content
           var tileObj = {terrain:#{tile.terrain},
                          enchanted:#{tile.enchanted},
                          paths:#{tile.paths},
-                         encounter:'#{tile.encounter}'
+                         encounter:'#{tile.encounter}',
+                         spriteIndex:'#{tile.spriteIndex}'
                          };
       else
         script.
           var tileObj = {terrain:#{tile.terrain},
                          enchanted:#{tile.enchanted},
-                         paths:#{tile.paths}
+                         paths:#{tile.paths},
+                         spriteIndex:'#{tile.spriteIndex}'
                          };
+      script.
+        map.tile.push(tileObj);
   #textOverlay
     fieldset
 
@@ -57,7 +61,8 @@ block content
                 case "birdsong":
                     stateData.characters.forEach( function(c) {
                         var innerDiv = $('<div></div>').attr('id',c.name);
-                        innerDiv.append( $('<p></p>').text(c.name));
+                        innerDiv.append( $('<p></p>').text(c.name))
+                                .append( $('<p></p>').addClass('instructions').text('Whence do you travel and how so?'));
                         destinationMap(innerDiv,c,stateData.tileIndex,4);
                         innerDiv.append( $('<button></button>').addClass('anotherscreenbutton').text('Magic'))
                                 .append( $('<label></label>').attr('for','hidden').text('Stay Hidden'))
@@ -87,18 +92,62 @@ block content
             }
         };
         
+        var searchDestinationMap = function(results,index) {
+            var found = false;
+            results.forEach( function(e,i,a) {
+                if( typeof e === 'array' && !found) {
+                    e.forEach( function(val) {
+                        if( val.index == index)
+                            found = true;
+                    });
+                }
+            });
+            
+            return found;
+        };
+        
+        var makeAttainable = function( moves, index, from, results, c) {
+            if( !!results[moves] === false)
+                results[moves] = new Array();
+            results[moves].push({index:index,from:from});
+            
+            if( moves > 0) {
+                if(map.tile[index].paths&1 && !searchDestinationMap(results,index+1) && (index+1)%map.width!=0)
+                    makeAttainable( moves - 1, index + 1, index, results, c);
+                if(map.tile[index].paths&2 && !searchDestinationMap(results,index-map.width) && Math.floor(index/map.width)>0)
+                    makeAttainable( moves - 1, index - map.width, index, results, c);
+                if(map.tile[index].paths&4 && !searchDestinationMap(results,index-1) && (index%map.width!=0))
+                    makeAttainable( moves - 1, index - 1, index, results, c);
+                if(map.tile[index].paths&8 && !searchDestinationMap(results,index+map.width) && Math.floor(index/map.width)<(map.height-1))
+                    makeAttainable( moves - 1, index + map.width, index, results, c);
+            }
+        };
+        
         var destinationMap = function(parentDiv,c,tileIndex,maxMove) {
-            parentDiv.append( $('<p></p>').addClass('instructions').text('Whence do you travel and how so?'));
             var row = Math.floor(tileIndex/map.width);
+            var yOffset = (row > maxMove ? row - maxMove : 0) * 16;
             var col = tileIndex%map.width;
-            var startRow = row - maxMove;
-            if( startRow < 0) startRow = 0;
-            var endRow = row+maxMove;
-            if( endRow >= map.height) endRow = map.height - 1;
-            var startCol = col - maxMove;
-            if( startCol < 0) startCol = 0;
-            var endCol = col+maxMove;
-            if( endCol >= map.width) endCol = map.width - 1;
+            var xOffset = (col > maxMove ? col - maxMove : 0) * 16;
+            
+            var results = new Array(maxMove+1);
+            makeAttainable( maxMove, tileIndex, tileIndex, results, c);
+
+            var mapDiv = $('<div></div>').addClass('destinationMap');
+            results.forEach( function(equidistantA) {
+                if( !!equidistantA) {
+                    equidistantA.forEach( function(o) {
+                        var y = (Math.floor(o.index/map.width)*16 - yOffset) + 'px';
+                        var x = ((o.index%map.width)*16 - xOffset) + 'px';
+                        var im = $('<img></img>').addClass('mapTile')
+                                                 .css('left',x)
+                                                 .css('top',y)
+                                                 .css('background-position',map.tile[o.index].spriteIndex);
+                        mapDiv.append(im);
+                    });
+                }
+            });
+            
+            parentDiv.append(mapDiv);
         };
 
         var emit = function(emitData) {
