@@ -19,6 +19,24 @@ a {
     height:16px;
 }
 
+.destinationMap {
+    position:relative;
+    width:144px;
+    height:144px;
+}
+
+.attainableTile {
+    border: solid white;
+}
+
+.selfTile {
+    border: solid red;
+}
+
+.destinationTile {
+    border: solid green;
+}
+
 #overworld {
     position:fixed;
     left:0px;
@@ -29,7 +47,7 @@ a {
 
 #textOverlay {
     position:fixed;
-    left:20px;
+    left:200px;
     right:20px;
     top:20px;
     bottom:20px;

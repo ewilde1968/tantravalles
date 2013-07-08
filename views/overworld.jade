@@ -61,16 +61,13 @@ block content
                 case "birdsong":
                     stateData.characters.forEach( function(c) {
                         var innerDiv = $('<div></div>').attr('id',c.name);
-                        innerDiv.append( $('<p></p>').text(c.name))
-                                .append( $('<p></p>').addClass('instructions').text('Whence do you travel and how so?'));
-                        destinationMap(innerDiv,c,stateData.tileIndex,4);
-                        innerDiv.append( $('<button></button>').addClass('anotherscreenbutton').text('Magic'))
-                                .append( $('<label></label>').attr('for','hidden').text('Stay Hidden'))
-                                .append( $('<input></input>').attr('type','checkbox').attr('name','hidden'))
-                                .append( $('<label></label>').attr('for','activesearch').text('Active Search'))
-                                .append( $('<input></input>').attr('type','checkbox').attr('name','activesearch'))
-                                .append( $('<label></label>').attr('for','latestart').text('Late Start'))
-                                .append( $('<input></input>').attr('type','checkbox').attr('name','latestart'));
+                        innerDiv.append( $('<p></p>').text(c.name));
+                        
+                        if(stateData.characters.length > 1) {
+                            innerDiv.append( $('<label></label>').attr('for','follow').text('Follow'))
+                                    .append( followSelect(stateData.characters, c));
+                        }
+                        dontFollowOptions( innerDiv,c,stateData);
                         fs.append( innerDiv);
                     });
                     
@@ -80,7 +77,8 @@ block content
                             var innerDiv = $('#' + c.name);
                             emitData[c.name] = {hidden:$('#' + c.name + ' input[name="hidden"]').is(':checked'),
                                                 activesearch:$('#' + c.name + ' input[name="activesearch"]').is(':checked'),
-                                                latestart:$('#' + c.name + ' input[name="latestart"]').is(':checked')
+                                                latestart:$('#' + c.name + ' input[name="latestart"]').is(':checked'),
+                                                destination:destinationPath(c)
                                                 };
                         });
                         emit(emitData);
@@ -92,10 +90,42 @@ block content
             }
         };
         
+        var dontFollowOptions = function(parentDiv,c,stateData) {
+            var dontFollowDiv = $('<div></div>').addClass('dontFollow');
+            dontFollowDiv.append( $('<p></p>').addClass('instructions').text('Whence do you travel and how so?'))
+                         .append( $('<button></button>').addClass('anotherscreenbutton').text('Magic'))
+                         .append( $('<label></label>').attr('for','hidden').text('Stay Hidden'))
+                         .append( $('<input></input>').attr('type','checkbox').attr('name','hidden'))
+                         .append( $('<label></label>').attr('for','activesearch').text('Active Search'))
+                         .append( $('<input></input>').attr('type','checkbox').attr('name','activesearch'))
+                         .append( $('<label></label>').attr('for','latestart').text('Late Start'))
+                         .append( $('<input></input>').attr('type','checkbox').attr('name','latestart'));
+            destinationMap(dontFollowDiv,c,stateData.tileIndex,4);
+            
+            parentDiv.append(dontFollowDiv);
+        };
+        
+        var followSelect = function(characters, c) {
+            var sel = $('<select></select>').attr('name','follow')
+                                            .change( c, function(e) {
+                if( sel.val() != 'nobody')
+                    $('#' + e.data.name + ' .dontFollow').css('display','none');
+                else
+                    $('#' + e.data.name + ' .dontFollow').css('display','inline');
+            });
+            characters.forEach( function(character) {
+                if( character != c)
+                    sel.append( $('<option></option>').val(character.name).text(character.name));
+            });
+            sel.append( $('<option></option>').val('nobody').text('nobody').prop('selected',true));
+            
+            return sel;
+        };
+        
         var searchDestinationMap = function(results,index) {
             var found = false;
             results.forEach( function(e,i,a) {
-                if( typeof e === 'array' && !found) {
+                if( !!e && !found) {
                     e.forEach( function(val) {
                         if( val.index == index)
                             found = true;
@@ -141,13 +171,47 @@ block content
                         var im = $('<img></img>').addClass('mapTile')
                                                  .css('left',x)
                                                  .css('top',y)
-                                                 .css('background-position',map.tile[o.index].spriteIndex);
+                                                 .css('background-position',map.tile[o.index].spriteIndex)
+                                                 .data('index',o.index)
+                                                 .data('from',o.from);
+                        im.addClass('attainableTile');
+                        if( o.index == o.from)
+                            im.addClass('selfTile');
+                            
+                        im.click( o.index, function() {
+                            $('.destinationTile').removeClass('destinationTile');
+                            $(this).addClass('destinationTile');
+                        });
                         mapDiv.append(im);
                     });
                 }
             });
             
             parentDiv.append(mapDiv);
+        };
+        
+        var destinationPath = function(c) {
+            var mDiv = $('#' + c.name + ' .destinationMap');
+            var dt = mDiv.children('.destinationTile');
+            var allTiles = mDiv.children('.attainableTile');
+            if( !!dt) {
+                var result = new Array();
+                result.unshift( dt.data('index'));
+                var from = dt.data('from');
+                while( dt.data('index') != from) {
+                    result.unshift( from);
+                    dt = allTiles.filter( function() {
+                        var val = $(this).data('index');
+                        var rval = val === from;
+                        return rval;
+                    });
+                    from = dt.data('from');
+                }
+                
+                return result;
+            }
+            
+            return null;
         };
 
         var emit = function(emitData) {
